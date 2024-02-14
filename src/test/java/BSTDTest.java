@@ -30,10 +30,13 @@ public class BSTDTest {
                 60.0,
                 3
         );
+
         queries.add(query);
+
         List<String> values = b.bstd(queries).stream()
-                .map(entry->entry.value())
+                .map(Entry::value)
                 .collect(Collectors.toList());
+
         System.out.println(values);
         IRelevantObjectService relevantObjectService = new DefaultRelevantObjectServiceImpl();
 
