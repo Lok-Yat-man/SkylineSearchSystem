@@ -5,6 +5,7 @@ import com.github.davidmoten.rtree.Node;
 import com.github.davidmoten.rtree.geometry.Geometry;
 import com.github.davidmoten.rtree.geometry.HasGeometry;
 import com.github.davidmoten.rtree.geometry.Rectangle;
+import com.github.davidmoten.rtree.geometry.internal.RectangleDouble;
 import com.github.davidmoten.rtree.internal.LeafDefault;
 import com.github.davidmoten.rtree.internal.NonLeafDefault;
 import entity.Query;
@@ -14,6 +15,7 @@ import ivtidx.DefaultLeafInvertedIndex;
 import ivtidx.InvertedIndex;
 import service.DefaultRelevantObjectServiceImpl;
 import service.IRelevantObjectService;
+import util.MBRIntersection;
 
 import java.util.*;
 
@@ -50,7 +52,14 @@ public class BSTD {
             throw new RuntimeException("RTree not exists!");
         }
         Node<String, Geometry> rootNode = rootOptional.get();
-        Rectangle B = rootNode.geometry().mbr();
+        Rectangle B = RectangleDouble.create(-180, 0, 180, 90);
+
+        /*System.out.println(rootNode.geometry());
+        System.out.println(((NonLeafDefault<String, Geometry>) rootNode).children().size());
+        for (Node node:
+        ((NonLeafDefault<String, Geometry>) rootNode).children()) {
+            System.out.println(node.geometry());
+        }*/
 
         // MinHeap H=∅
         // Add root of IRTree to H, ∑(qi∈Q)〖st(qi,p)〗
@@ -64,16 +73,28 @@ public class BSTD {
         });
         minHeap.add(rootNode);
 
+        int countEmpty = 0, countCore = 0, countNon = 0;
+
         while (!minHeap.isEmpty()) {
-            HasGeometry e = minHeap.poll();
+
+            //System.out.println("minHeap" + minHeap.size());
+
+            Node<String, Geometry> e = minHeap.poll();
             if (e.geometry().mbr().intersects(B)) {
                 // e is a leaf node
                 if (e instanceof LeafDefault) {
+
+                    System.out.println(e.getClass().getName());
+
                     if (S.isEmpty()) {
                         // Add e to S
                         // B = B ∩ Ru(e)
                         S.addAll(((LeafDefault<String, Geometry>) e).entries());
-                        B = getIntersectMBR(B, e.geometry().mbr());
+                        B = MBRIntersection.getIntersectMBR(B, e.geometry().mbr());
+
+                        System.out.println("countEmpty" + (++countEmpty));
+                        System.out.println("B " + B);
+
                     } else {
                         // for each entry ∈ LeafNode
                         for (Entry<String, Geometry> ee : ((LeafDefault<String, Geometry>) e).entries()) {
@@ -87,18 +108,26 @@ public class BSTD {
                             }
                             if (isSkyline) {
                                 S.add(ee);
-                                B = getIntersectMBR(B, ee.geometry().mbr());
+                                B = MBRIntersection.getIntersectMBR(B, ee.geometry().mbr());
                             }
                         }
+
+                        System.out.println("countCore" + (++countCore));
+
                     }
                 }
                 // e is a non-leaf node
                 else if (e instanceof NonLeafDefault) {
+
+                    System.out.println(e.getClass().getName());
+
                     for (Node<String, Geometry> ee : ((NonLeafDefault<String, Geometry>) e).children()) {
                         if (ee.geometry().mbr().intersects(B)) {
                             minHeap.add(ee);
                         }
                     }
+
+                    //System.out.println("countNon" + (++countNon));
                 }
             }
         }

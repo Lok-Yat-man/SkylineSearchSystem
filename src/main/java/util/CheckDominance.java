@@ -7,6 +7,7 @@ import com.github.davidmoten.rtree.geometry.Rectangle;
 import com.github.davidmoten.rtree.geometry.internal.GeometryUtil;
 import com.github.davidmoten.rtree.geometry.internal.RectangleDouble;
 import com.github.davidmoten.rtree.internal.EntryDefault;
+import entity.Coordinate;
 import entity.Query;
 import entity.RelevantObject;
 import service.DefaultRelevantObjectServiceImpl;
@@ -19,8 +20,10 @@ public class CheckDominance {
         Rectangle Ru = null;
         DefaultRelevantObjectServiceImpl droService = new DefaultRelevantObjectServiceImpl();
 
+        //对每个query
         for (Query q : queries) {
             List<String> ss = droService.getById(s.value()).getWeightKey();
+//            System.out.println(ss);
             if (!ss.containsAll(q.getKeywords())) {
                 return true;
             }
@@ -38,9 +41,14 @@ public class CheckDominance {
 
 
     public static double st(HasGeometry e, Query query) {
-        double log = query.getLocation().getLongitude();
-        double lat = query.getLocation().getLatitude();
-        double dist = GeometryUtil.distance(log, lat, e.geometry().mbr());
+        double logQ = query.getLocation().getLongitude();
+        double latQ = query.getLocation().getLatitude();
+        Coordinate coordinateQ = Coordinate.create(logQ, latQ);
+
+        double logE = e.geometry().mbr().x1();
+        double latE = e.geometry().mbr().y1();
+        Coordinate coordinateE = Coordinate.create(logE, latE);
+        double dist = CommonAlgorithm.calculateDistance(coordinateE, coordinateQ);
 
         return dist;
     }
