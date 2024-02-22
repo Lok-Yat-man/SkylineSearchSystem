@@ -1,9 +1,7 @@
-import bstd.BSTD;
+import std.BSTD;
 import com.github.davidmoten.rtree.Entry;
-import com.github.davidmoten.rtree.geometry.Geometry;
 import entity.Coordinate;
 import entity.Query;
-import irtree.IRTree;
 import org.junit.jupiter.api.Test;
 import service.DefaultRelevantObjectServiceImpl;
 import service.IRelevantObjectService;
@@ -11,7 +9,6 @@ import service.IRelevantObjectService;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class BSTDTest {

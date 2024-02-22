@@ -1,4 +1,4 @@
-package bstd;
+package std;
 
 import com.github.davidmoten.rtree.Entry;
 import com.github.davidmoten.rtree.Node;
