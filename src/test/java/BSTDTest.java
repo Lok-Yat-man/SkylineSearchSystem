@@ -17,6 +17,10 @@ public class BSTDTest {
     @Test
     public void bstdTest(){
         LinkedList<Query> queries = new LinkedList<>();
+        // 边界值：
+        // x1 = -120.09514 y1 = 27.555126
+        // x2 = -73.200455 y2 = 53.679195
+
         /*Query query1 = Query.create(
                 Coordinate.create(
                         -75.16256713867188,
@@ -30,10 +34,10 @@ public class BSTDTest {
         );*/
         Query query2 = Query.create(
                 Coordinate.create(
-                        -74.1,
+                        -75.1,
                         40.1
                 ),
-                Arrays.asList(""),
+                Arrays.asList("Restaurants"),
                 //Arrays.asList("Water"),
                 5,
                 60.0,

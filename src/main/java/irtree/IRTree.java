@@ -132,7 +132,7 @@ public final class IRTree {
 
     @Setter
     @Getter
-    private static class StringPair {
+    public static class StringPair {
 
         private String key;
 
@@ -148,11 +148,19 @@ public final class IRTree {
         public static StringPair create(String key, Double value) {
             return new StringPair(key, value);
         }
+
+        @Override
+        public String toString() {
+            return "StringPair{" +
+                    "key='" + key + '\'' +
+                    ", value=" + value +
+                    '}';
+        }
     }
 
     @Setter
     @Getter
-    private static class NodePair {
+    public static class NodePair {
 
         private Node<String, Geometry> key;
 
@@ -166,18 +174,23 @@ public final class IRTree {
         public static NodePair create(Node<String, Geometry> node, Double value) {
             return new NodePair(node, value);
         }
+
+        @Override
+        public String toString() {
+            return "NodePair{" +
+                    "key=" + key +
+                    ", value=" + value +
+                    '}';
+        }
     }
 
-//    public double st(HasGeometry e, Query query) {
-//        double log = query.getLocation().getLongitude();
-//        double lat = query.getLocation().getLatitude();
-//        double dist = GeometryUtil.distance(log, lat, e.geometry().mbr());
-//        if(e instanceof NonLeafDefault){
-//            Map<String, List<NodePair>> nonLeafIF = nodeInvertedIndexMap.get(e);
-//
-//        }
-//        return GeometryUtil.distance(log, lat, e.geometry().mbr());
-//    }
+    public Map<String, List<NodePair>> getNonLeafInvFile(Node<String, Geometry> node) {
+         return nodeInvertedIndexMap.get(node);
+    }
+
+    public Map<String, List<StringPair>> getLeafInvFile(Node<String, Geometry> node) {
+        return leafInvertedIndexMap.get(node);
+    }
 
     public static void main(String[] args) {
 

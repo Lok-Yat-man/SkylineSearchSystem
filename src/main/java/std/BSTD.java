@@ -2,12 +2,13 @@ package std;
 
 import com.github.davidmoten.rtree.Entry;
 import com.github.davidmoten.rtree.Node;
+import com.github.davidmoten.rtree.geometry.Geometries;
 import com.github.davidmoten.rtree.geometry.Geometry;
 import com.github.davidmoten.rtree.geometry.HasGeometry;
 import com.github.davidmoten.rtree.geometry.Rectangle;
-import com.github.davidmoten.rtree.geometry.internal.RectangleDouble;
 import com.github.davidmoten.rtree.internal.LeafDefault;
 import com.github.davidmoten.rtree.internal.NonLeafDefault;
+import entity.Coordinate;
 import entity.Query;
 import entity.RelevantObject;
 import irtree.IRTree;
@@ -15,13 +16,13 @@ import ivtidx.DefaultLeafInvertedIndex;
 import ivtidx.InvertedIndex;
 import service.DefaultRelevantObjectServiceImpl;
 import service.IRelevantObjectService;
-import util.MBRIntersection;
+import util.CheckDominance;
+import util.CommonAlgorithm;
+import util.MBR;
 
 import java.util.*;
 
-import static util.CheckDominance.isDominant;
-import static util.CheckDominance.st;
-import static util.MBRIntersection.getIntersectMBR;
+
 
 public class BSTD {
 
@@ -52,7 +53,7 @@ public class BSTD {
             throw new RuntimeException("RTree not exists!");
         }
         Node<String, Geometry> rootNode = rootOptional.get();
-        Rectangle B = RectangleDouble.create(-180, 0, 180, 90);
+        Rectangle B = Geometries.rectangleGeographic(-180d, 0d, 179d, 90d);
 
         /*System.out.println(rootNode.geometry());
         System.out.println(((NonLeafDefault<String, Geometry>) rootNode).children().size());
@@ -74,6 +75,7 @@ public class BSTD {
         minHeap.add(rootNode);
 
         int countEmpty = 0, countCore = 0, countNon = 0;
+        int flag = 0;
 
         while (!minHeap.isEmpty()) {
 
@@ -90,8 +92,10 @@ public class BSTD {
                         // Add e to S
                         // B = B ∩ Ru(e)
                         S.addAll(((LeafDefault<String, Geometry>) e).entries());
-                        B = MBRIntersection.getIntersectMBR(B, e.geometry().mbr());
+                        B = MBR.getIntersectMBR(B, e.geometry().mbr());
 
+                        System.out.println(irTree.getLeafInvFile(e));
+                        flag = 1;
                         System.out.println("countEmpty" + (++countEmpty));
                         System.out.println("B " + B);
 
@@ -101,6 +105,8 @@ public class BSTD {
                             boolean isSkyline = true;
                             // for each p ∈ S
                             for (Entry<String, Geometry> s : S) {
+                                //对所有的skyline，先构造一个整体的不确定区域
+
                                 if (isDominant(s, ee, queries)) {
                                     isSkyline = false;
                                     break;
@@ -108,18 +114,21 @@ public class BSTD {
                             }
                             if (isSkyline) {
                                 S.add(ee);
-                                B = MBRIntersection.getIntersectMBR(B, ee.geometry().mbr());
+                                B = MBR.getIntersectMBR(B, ee.geometry().mbr());
+                                System.out.println(B);
                             }
                         }
 
-                        System.out.println("countCore" + (++countCore));
+                        //System.out.println("countCore" + (++countCore));
 
                     }
                 }
                 // e is a non-leaf node
                 else if (e instanceof NonLeafDefault) {
 
-                    System.out.println(e.getClass().getName());
+                    //System.out.println(e.getClass().getName());
+                    if (flag == 1)
+                        System.out.println(irTree.getNonLeafInvFile(e));
 
                     for (Node<String, Geometry> ee : ((NonLeafDefault<String, Geometry>) e).children()) {
                         if (ee.geometry().mbr().intersects(B)) {
@@ -132,5 +141,54 @@ public class BSTD {
             }
         }
         return S;
+    }
+
+    public boolean isDominant(Entry<String, Geometry> s, Entry<String, Geometry> e, List<Query> queries) {
+
+        Rectangle Ru = MBR.generateEntryMBR(e, queries.get(0));
+        DefaultRelevantObjectServiceImpl droService = new DefaultRelevantObjectServiceImpl();
+
+        //对每个query
+        for (Query q : queries) {
+/*
+            List<String> ss = droService.getById(s.value()).getWeightKey();
+            System.out.println(ss);
+            if (!ss.containsAll(q.getKeywords())) {
+                return true;
+            }
+*/
+            Rectangle Ruqi = MBR.generateEntryMBR(e, q);
+            Ru = Ru.add(Ruqi);
+        }
+
+        System.out.println(Ru);
+
+        String IdE = e.value();
+        RelevantObject objectE = droService.getById(IdE);
+        return Ru.contains(objectE.getCoordinate().getLongitude(), objectE.getCoordinate().getLatitude());
+    }
+
+
+    public double st(HasGeometry e, Query query) {
+        double logQ = query.getLocation().getLongitude();
+        double latQ = query.getLocation().getLatitude();
+        Coordinate coordinateQ = Coordinate.create(logQ, latQ);
+
+        double logE = e.geometry().mbr().x1();
+        double latE = e.geometry().mbr().y1();
+        Coordinate coordinateE = Coordinate.create(logE, latE);
+        double dist = CommonAlgorithm.calculateDistance(coordinateE, coordinateQ);
+
+        if (e instanceof NonLeafDefault) {
+            Map<String, List<IRTree.NodePair>> nonLeafInvFile = irTree.getNonLeafInvFile((Node<String, Geometry>) e);
+
+
+        }
+
+        return dist;
+    }
+
+    public double w(Query query, Node node) {
+        return 0.0;
     }
 }
