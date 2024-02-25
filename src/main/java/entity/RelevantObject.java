@@ -42,7 +42,7 @@ public class RelevantObject implements Serializable {
         this.weights = weights;
     }
 
-    public double getWeight(List<String> keywords) {
+    public double getWeights(List<String> keywords) {
 
         if (keywords == null || keywords.isEmpty()) {
             return 0;

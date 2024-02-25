@@ -21,17 +21,18 @@ public class BSTDTest {
         // x1 = -120.09514 y1 = 27.555126
         // x2 = -73.200455 y2 = 53.679195
 
-        /*Query query1 = Query.create(
+        Query query1 = Query.create(
                 Coordinate.create(
                         -75.16256713867188,
                         39.94322204589844
                 ),
-                Arrays.asList(""),
+                Arrays.asList("Restaurants"),
                 //Arrays.asList("Water"),
                 5,
                 60.0,
                 3
-        );*/
+        );
+/*
         Query query2 = Query.create(
                 Coordinate.create(
                         -75.1,
@@ -43,9 +44,10 @@ public class BSTDTest {
                 60.0,
                 3
         );
+*/
 
-//        queries.add(query1);
-        queries.add(query2);
+        queries.add(query1);
+        //queries.add(query2);
 
 
         List<Entry<String, Geometry>> valuesEntry = b.bstd(queries);
@@ -55,7 +57,8 @@ public class BSTDTest {
                 .collect(Collectors.toList());
 
 
-        System.out.println(valuesEntry);
+        //System.out.println(valuesEntry);
+        System.out.println(valuesEntry.size());
 
         IRelevantObjectService relevantObjectService = new DefaultRelevantObjectServiceImpl();
         System.out.println(relevantObjectService.getByIds(values));

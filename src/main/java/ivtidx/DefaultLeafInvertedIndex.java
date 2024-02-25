@@ -63,6 +63,11 @@ public class DefaultLeafInvertedIndex implements InvertedIndex<RelevantObject> {
     }
 
     @Override
+    public RelevantObject getValue(String s) {
+        return relevantObjectService.getById(s);
+    }
+
+    @Override
     public List<RelevantObject> getValues(String s) {
 
         return relevantObjectService.getByIds(

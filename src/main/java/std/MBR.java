@@ -1,6 +1,7 @@
-package util;
+package std;
 
 import com.github.davidmoten.rtree.Entry;
+import com.github.davidmoten.rtree.Node;
 import com.github.davidmoten.rtree.geometry.Geometries;
 import com.github.davidmoten.rtree.geometry.Geometry;
 import com.github.davidmoten.rtree.geometry.Rectangle;
@@ -15,13 +16,6 @@ public class MBR {
                 min(r1.x2(), r2.x2()), min(r1.y2(), r2.y2()));
     }
 
-    public static Rectangle generateEntryMBR (Entry<String, Geometry> e, Query query) {
-        double qx = query.getLocation().getLongitude();
-        double qy = query.getLocation().getLatitude();
-        // //todo
-        double radius = 0;
-        return Geometries.rectangle(qx - radius, qy - radius, qx + radius, qy + radius);
-    }
 
     private static double max(double a, double b) {
         if (a < b)

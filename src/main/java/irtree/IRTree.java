@@ -132,7 +132,7 @@ public final class IRTree {
 
     @Setter
     @Getter
-    public static class StringPair {
+    public static class StringPair implements Comparable{
 
         private String key;
 
@@ -143,7 +143,8 @@ public final class IRTree {
             this.value = value;
         }
 
-        StringPair() {}
+        StringPair() {
+        }
 
         public static StringPair create(String key, Double value) {
             return new StringPair(key, value);
@@ -156,11 +157,16 @@ public final class IRTree {
                     ", value=" + value +
                     '}';
         }
+
+        @Override
+        public int compareTo(Object o) {
+            return Double.compare(value, ((StringPair)o).value);
+        }
     }
 
     @Setter
     @Getter
-    public static class NodePair {
+    public static class NodePair implements Comparable {
 
         private Node<String, Geometry> key;
 
@@ -182,10 +188,15 @@ public final class IRTree {
                     ", value=" + value +
                     '}';
         }
+
+        @Override
+        public int compareTo(Object o) {
+            return Double.compare(value, ((NodePair) o).value);
+        }
     }
 
     public Map<String, List<NodePair>> getNonLeafInvFile(Node<String, Geometry> node) {
-         return nodeInvertedIndexMap.get(node);
+        return nodeInvertedIndexMap.get(node);
     }
 
     public Map<String, List<StringPair>> getLeafInvFile(Node<String, Geometry> node) {
