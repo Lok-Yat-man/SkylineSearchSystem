@@ -96,20 +96,15 @@ public class BSTD {
                         if (S.isEmpty()) {
                             continue;
                         }
-                        //B = MBR.getIntersectMBR(B, e.geometry().mbr());
                         Rectangle Rue = generateSkylinesMBR(S, queries);
                         B = getIntersectMBR(B, Rue);
 
-                        //System.out.println(irTree.getLeafInvFile(e));
-                        //flag = 1;
-                        System.out.println("countEmpty" + (++countEmpty));
-                        //System.out.println("B " + B);
+                        //System.out.println("countEmpty" + (++countEmpty));
 
                     } else {
                         // for each p ∈ S
-                        //对所有的skyline，先构造一个整体的不确定区域
+                        //对所有的skyline，先构造一个整体的不确定区域交集
                         Rectangle uncertainty = generateSkylinesMBR(S, queries);
-                        boolean isAddedSkyline = false;
                         // for each entry ∈ LeafNode
                         for (Entry<String, Geometry> ee : ((LeafDefault<String, Geometry>) e).entries()) {
                             if (isDominant(ee, uncertainty)) {
@@ -130,16 +125,11 @@ public class BSTD {
                 // e is a non-leaf node
                 else if (e instanceof NonLeafDefault) {
 
-                    //System.out.println(e.getClass().getName());
-//                    if (flag == 1)
-//                        System.out.println(irTree.getNonLeafInvFile(e));
-
                     for (Node<String, Geometry> ee : ((NonLeafDefault<String, Geometry>) e).children()) {
                         if (ee.geometry().mbr().intersects(B)) {
                             minHeap.add(ee);
                         }
                     }
-
                     //System.out.println("countNon" + (++countNon));
                 }
             }
@@ -155,10 +145,9 @@ public class BSTD {
     }
 
     public Rectangle generateUncertaintyMBR(HasGeometry e, List<Query> queries) {
-        Query q0 = queries.get(0);
-        double q0x = q0.getLocation().getLongitude();
-        double q0y = q0.getLocation().getLatitude();
-        Rectangle MBR = Geometries.rectangle(q0x, q0y, q0x, q0y);
+        double x = e.geometry().mbr().x1();
+        double y = e.geometry().mbr().y1();
+        Rectangle MBR = Geometries.rectangle(x, y, x, y);
 
         for (Query query : queries) {
             double qx = query.getLocation().getLongitude();
@@ -186,12 +175,10 @@ public class BSTD {
     }
 
     public Rectangle generateSkylinesMBR(List<Entry<String, Geometry>> S, List<Query> queries) {
-//        Entry<String, Geometry> skyline0 = S.get(0);
-//        Rectangle MBR = generateUncertaintyMBR(skyline0, queries);
-
         Rectangle MBR = Geometries.rectangle(-180d, 0d, 179d, 90d);
         for (Entry<String, Geometry> s : S) {
-            MBR = getIntersectMBR(MBR, generateUncertaintyMBR(s, queries));
+            Rectangle Rus = generateUncertaintyMBR(s, queries);
+            MBR = getIntersectMBR(MBR, Rus);
         }
         return MBR;
     }
@@ -236,7 +223,7 @@ public class BSTD {
         Map<String, List<IRTree.NodePair>> nonLeafInvFile = irTree.getNonLeafInvFile(node);
         boolean anyContain = query.getKeywords().stream().anyMatch(nonLeafInvFile::containsKey);
         if (!anyContain) {
-            return 0.0;
+            return 0;
         }
         double weight = 1.0;
         for (String queryString : query.getKeywords()) {
@@ -258,7 +245,7 @@ public class BSTD {
         Map<String, List<IRTree.StringPair>> leafInvFile = irTree.getLeafInvFile(node);
         boolean anyContain = query.getKeywords().stream().anyMatch(leafInvFile::containsKey);
         if (!anyContain) {
-            return 0.0;
+            return 0;
         }
         double weight = 1.0;
         for (String queryString : query.getKeywords()) {
@@ -282,7 +269,7 @@ public class BSTD {
         List<String> weightKey = relevantObject.getWeightKey();
         boolean anyContain = query.getKeywords().stream().anyMatch(weightKey::contains);
         if (!anyContain) {
-            return 0.0;
+            return 0;
         }
         double weight = 1.0;
         for (String queryString : query.getKeywords()) {
